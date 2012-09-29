@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python /opt/prey/platform/linux/prey-config.py
+

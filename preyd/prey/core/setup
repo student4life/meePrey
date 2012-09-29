@@ -1,0 +1,164 @@
+#!/bin/bash
+####################################################################
+# Prey Core Setup Routine - by Tomas Pollak (bootlog.org)
+# URL: http://preyproject.com
+# License: GPLv3
+####################################################################
+
+trap "" INT TERM
+# trap cleanup EXIT
+
+cleanup(){
+	log " -- Cleaning up!\n"
+	delete_tmpdir
+}
+
+error_exit(){
+	log " !! $1"
+	cleanup
+	exit 1
+}
+
+show_usage(){
+	echo "Prey ${version} ( http://preyproject.com )"
+	echo -e "\nUsage: `basename $0` [options]"
+	echo -e "Options:"
+	echo -e "  -t | --test\t\tTest mode. Runs Prey without sending any data."
+	echo -e "  -c | --check\t\tCheck mode. Checks if configuration is correctly set up."
+	echo -e "  -l | --log\t\tLog output to ${base_path}/prey.log (default in Windows)."
+	echo -e "  -s | --silent\t\tDon't log any output."
+	echo -e "  -o | --on-demand\tRuns Prey without checking if on-demand mode is active.\n"
+}
+
+show_version(){
+	echo "Prey ${version}"
+}
+
+# step throught the params and check
+until [ -z "$1" ]; do
+	case "$1" in
+		-t | --test )
+			echo -e "\n -- TEST MODE ON."
+			trap - INT # set off trap
+			test_mode=1
+			. $base_path/test/include "$2" 2> /dev/null
+			shift
+		;;
+		-c | --check )
+			echo -e "\n -- CHECK MODE ON."
+			check_mode=1
+		;;
+			-o | --on-demand )
+			echo -e "\n -- ON-DEMAND MODE ON."
+			on_demand_call=1
+		;;
+			-l | --log )
+			logfile="$base_path/prey.log"
+			echo -n "" > "$logfile" # empty the logfile first
+			log_output=">> \"$logfile\""
+		;;
+			-s | --silent )
+			log_output="&> /dev/null"
+		;;
+			-v | --version )
+			show_version && exit
+		;;
+			-h | --help | * )
+			show_usage && exit
+	esac
+	shift
+done
+
+get_os(){
+	os=`lowercase \`uname\``
+
+	if [ "$os" == "windowsnt" ]; then
+		os=windows
+	else # linux/mac stuff
+		if [ "$os" == "darwin" ]; then
+			os=mac
+		fi
+		readonly logged_user=`who | cut -d' ' -f1 | tail -1`
+		readonly root_path='/'
+		readonly home_path=`eval echo ~`
+		[ -t 1 ] && set_colors # only set color if running from terminal (not Cron)
+	fi
+
+	readonly os
+	readonly platform_path="$base_path/platform/$os"
+	PATH=$PATH:$platform_path/bin
+
+}
+
+# here we put the vars that are shared by two os, but a third one has
+# different values
+set_vars(){
+	tmpbase="/tmp"
+	line_breaker="\n"
+	user_agent="-A Prey/$version ($os)"
+	processes='ps ax'
+}
+
+set_aliases(){
+	shopt -s expand_aliases
+	alias getter="curl $curl_options -s \"$user_agent\""
+	alias mailsender="sendEmail"
+}
+
+set_constants(){
+	readonly lang
+	readonly start_time=`date +"%F %T"`
+
+	readonly config_file="$base_path/config"
+	readonly tmpdir="$tmpbase/p${RANDOM}"
+	readonly last_response="$tmpbase/prey-last-response.xml"
+	readonly on_demand_pipefile="$tmpbase/prey-on-demand.pipe"
+	readonly logged_user
+
+	readonly control_panel_url="http://control.preyproject.com" 2> /dev/null
+	readonly modules_url=$control_panel_url 2> /dev/null
+	updates_url="http://cloud.github.com/downloads/tomas/prey" 2> /dev/null
+}
+
+set_colors(){
+	cyan='\E[36m'
+	green='\E[32m'
+	red='\E[31m'
+	color_end='\E[0m'
+	bold='\033[1m'
+	bold_end='\033[0m'
+}
+
+check_on_demand_status(){
+
+	# if this is a regular call (from cron) let's check if we should run or not
+	if [[ -n "$on_demand_call" || ! -f "$on_demand_pipefile" ]]; then
+		return 1
+	fi
+
+	# we check if the pipe has been used to send pings in the last ten minutes
+	# if not, then we assume the connection has been cut off
+	if test `find "$on_demand_pipefile" -mmin +10`; then
+
+		echo " -- On Demand connection seems to have ended. Cleaning up and resetting..."
+		. "$base_path/core/on_demand"
+
+		[ -n "`is_process_running 'openssl'`" ] && kill_process 'openssl'
+		on_demand_cleanup
+		sleep 3 # just to make sure changes are reflected as they should
+
+	else
+
+		echo -e " -- Prey On Demand is active and connected. Back to sleep...\n"
+		exit 1
+
+	fi
+
+}
+
+get_os
+set_vars
+set_aliases
+. "$platform_path/settings"
+set_constants
+check_on_demand_status

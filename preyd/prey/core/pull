@@ -1,0 +1,104 @@
+#!/bin/bash
+####################################################################
+# Prey Core Pull Functions - by Tomas Pollak (bootlog.org)
+# URL: http://preyproject.com
+# License: GPLv3
+####################################################################
+
+# returns if we have have network access, otherwise 0
+# you can check against the gateway or the net, change it if you like
+check_net_status(){
+	# get_gateway_ip
+	# net_check_target=$gateway_ip
+	log ' -- Looking for connection...'
+
+	local net_check_target="www.google.com"
+	if [ "$os" == "windows" ]; then
+		local ping_params='-n'
+	else
+		local ping_params='-q -c'
+	fi
+	connected=`ping $ping_params 1 $net_check_target &> /dev/null && echo 1 || echo 0`
+
+	# if there's no connection with ping, lets try to see if curl gets through
+	# since some routers/networks block ICMP requests
+	if [ $connected == 0 ]; then
+		log ' -- Trying alternate method...'
+		connected=`getter --connect-timeout 3 $net_check_target &> /dev/null && echo 1 || echo 0`
+	fi
+}
+
+randomize_subdomain(){
+	check_url=`echo $check_url | sed "s/\/\//\/\/$RANDOM./"`
+}
+
+# we could eventually use a different method for status checking
+check_device_status(){
+	if [ "$post_method" == 'http' ]; then
+		local request_headers="-H X-Encrypt-Response:aes-128-cbc"
+
+		if [ -n "$device_key" ]; then
+			local check_url="$check_url/devices/$device_key.xml"
+		else
+			error_exit "You need to enter your Device Key for querying the Control Panel!"
+		fi
+		[ "$randomize_check_host" == 'y' ] && randomize_subdomain
+	fi
+
+	if [ "$extended_headers" == 'y' ]; then
+		log ' -- Requesting with extra sauce!'
+		get_internal_ip
+		get_gateway_ip
+		local request_headers="$request_headers -H X-Local-IP:$internal_ip -H X-Gateway-IP:$gateway_ip"
+	fi
+
+	send_request "$check_url" "$request_headers"
+	check_encrypted_response
+
+}
+
+
+check_encrypted_response(){
+
+	[[ "$response_status" != "200" && "$response_status" != "404" ]] && return 1
+
+	local content_type=$(get_header_value 'Content-Type')
+
+	if [[ -n "`find_in "$content_type" 'xml'`" && -z "`find_in "$response_body" '<config'`" ]]; then
+
+		log " ++ Got encrypted response! Processing... "
+		local cipher_key=$(md5_hash_for ${api_key})
+		response_body=$(echo "$response_body" | openssl aes-128-cbc -d -a -k "$cipher_key" 2> /dev/null)
+
+		[ $? == 1 ] && error_exit "Unable to decrypt response correctly! Exiting..."
+
+	fi
+
+}
+
+verify_keys(){
+	send_request "$control_panel_url/devices.xml" "-u $api_key:x"
+
+	if [[ "$response_status" == "200" || "$response_status" == "404" ]]; then
+
+		log  ' ** API key is valid. Your user account is correctly set up.'
+		local device_state=$(echo "$response_body" | grep $device_key -A1 | tail -1 | sed 's/<[^>]*>//g;s/ //g')
+
+		if [ -n "$device_state" ]; then
+			log " ** Device key is valid. Good. Current status is ${bold}${device_state}${bold_end}.\n"
+			return 0
+		else
+			log " !! Device key not valid!\n -> We couldn't find this device on your Control Panel account. Please reconfigure your settings, or reinstall if necessary.\n"
+		fi
+
+	elif [ "$response_status" == "401" ]; then
+
+		log " !! API key not valid! Got $response_status status code.\n -> Remember to check your inbox to verify your account. If you already have you should reconfigure your settings, or reinstall if necessary.\n"
+
+	else
+		log " !! Got unexpected response status: ${response_status}.\n"
+		[ -z "$response_headers" ] && log "It seems your PC is unable to reach the Control Panel. Please check your firewall settings so that Curl can connect to $control_panel_url over port 80 (HTTP).\n"
+	fi
+
+	return 1
+}

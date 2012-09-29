@@ -1,0 +1,7 @@
+<aegis>
+  <request>
+    <credential name="UID::root" />
+    <credential name="GID::root" />
+    <for path="/opt/prey/platform/linux/config"/>
+  </request>
+</aegis>
