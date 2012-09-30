@@ -94,7 +94,6 @@
                                 <property name="is_focus">True</property>
                                 <property name="editable">False</property>
                                 <property name="invisible_char">&#x2022;</property>
-                                <property name="caps_lock_warning">False</property>
                                 <property name="adjustment">delay_adjustment</property>
                                 <property name="snap_to_ticks">True</property>
                                 <property name="numeric">True</property>
