@@ -306,7 +306,7 @@ class PreyConfigurator(object):
 
 	def get_current_settings(self):
 
-		self.current_delay = os.popen("crontab -l | grep prey | cut -c 3-4").read()
+		self.current_delay = os.popen("/opt/cron/bin/crontab -l | grep prey | cut -c 3-4").read()
 		if not self.current_delay: self.current_delay = 20
 
 		self.current_auto_connect = self.get_setting('auto_connect')
@@ -406,7 +406,7 @@ class PreyConfigurator(object):
 		new_delay = self.get('delay').get_value_as_int()
 		if new_delay != int(self.current_delay):
 			# print 'Updating delay in crontab...'
-			os.system('(crontab -l | grep -v prey; echo "*/'+str(new_delay)+' * * * * /opt/prey/prey.sh > /var/log/prey.log") | crontab -')
+			os.system('(/opt/cron/bin/crontab -l | grep -v prey; echo "*/'+str(new_delay)+' * * * * bash /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
 
 		if self.check_if_configured == False:
 			self.show_alert(_("All good."), _("Configuration saved. Remember you still need to set up your posting method, otherwise Prey won't work!"))
@@ -452,7 +452,7 @@ class PreyConfigurator(object):
 		self.show_alert(_("Success"), _("Configuration saved! Your device is now setup and being tracked by Prey. Happy hunting!"), True)
 
 	def run_prey(self):
-		os.system(PREY_PATH + '/prey.sh > /var/log/prey.log &')
+		os.system('bash ' + PREY_PATH + '/prey.sh > /var/log/prey.log &')
 
 	################################################
 	# control panel api
