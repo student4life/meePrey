@@ -5,7 +5,7 @@ timedScript::timedScript(QObject *parent) :
 {
     timer = new QSystemAlignedTimer();
     myProcess = new QProcess();
-    script = "bash /opt/prey/run";
+    script = "/opt/prey/run";
     connect(timer,SIGNAL(timeout()),this, SLOT(runScript()));
     connect(this,SIGNAL(startTimer(int,int)),timer, SLOT(start(int,int)));
 

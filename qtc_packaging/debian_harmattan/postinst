@@ -4,8 +4,11 @@ set -e
 case "$1" in
     configure)
 
-    echo "changing permission of prey config"
+    echo "changing permission of prey config and prey.sh"
     chmod a+x /opt/prey/platform/linux/config
+    chmod a+x /opt/prey/platform/linux/prey-config.py
+    chmod a+x /opt/prey/prey.sh
+    chmod a+x /opt/prey/run
     echo "Starting preyd ..."
     [[ -e /etc/init/apps/preyd.conf ]] && initctl start apps/preyd
     ;;

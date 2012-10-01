@@ -71,7 +71,7 @@ alert_user() {
 	if [ -n "$alert_command" ]; then
 
 		if [ `whoami` == 'root' ]; then
-			DISPLAY=:0 su $logged_user -c "$alert_command \"$alert__alert_message\"" &
+			DISPLAY=:0 devel-su $logged_user -c "$alert_command \"$alert__alert_message\"" &
 		else
 			$alert_command "$alert__alert_message" &
 		fi
