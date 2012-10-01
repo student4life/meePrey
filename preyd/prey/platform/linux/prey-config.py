@@ -406,7 +406,7 @@ class PreyConfigurator(object):
 		new_delay = self.get('delay').get_value_as_int()
 		if new_delay != int(self.current_delay):
 			# print 'Updating delay in crontab...'
-			os.system('(/opt/cron/bin/crontab -l | grep -v prey; echo "*/'+str(new_delay)+' * * * * /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
+			os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/'+str(new_delay)+' * * * * /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
 
 		if self.check_if_configured == False:
 			self.show_alert(_("All good."), _("Configuration saved. Remember you still need to set up your posting method, otherwise Prey won't work!"))
