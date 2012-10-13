@@ -70,6 +70,6 @@ export(desktopfile.files)
 export(desktopfile.path)
 INSTALLS += icon svg desktopfile
 
-#daemonconf.path = /etc/init/apps
-#daemonconf.files = preyd.conf
+daemonconf.path = /etc/init/apps
+daemonconf.files = preyd.conf
 #INSTALLS += daemonconf
