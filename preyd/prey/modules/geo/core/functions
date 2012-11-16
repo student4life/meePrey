@@ -6,7 +6,10 @@
 ####################################################################
 
 get_current_location() {
-	if [ -n "$wifi_points" ]; then
+    if [ -n "$showcoordinates" ]; then
+        log " ###  getting position from GPS  ###"
+        current_location_json=`$showcoordinates`
+	elif [ -n "$wifi_points" ]; then
 		current_location_json=`getter -X POST -H "Content-Type: application/json" -d "{ 'version': '1.1.0', 'host': '$check_url', 'request_address': true, 'wifi_towers': [ ${wifi_points} ] }" http://www.google.com/loc/json`
 	fi
 }

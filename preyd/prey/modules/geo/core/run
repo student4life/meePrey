@@ -8,12 +8,15 @@
 log ' -- Trying to get list of nearby Wifi access points...'
 get_wifi_access_points
 
-if [ -n "$wifi_points" ]; then
+showcoordinates=`which showcoordinates`
+
+if [[ -n "$wifi_points" || -n "$showcoordinates" ]]; then
 
 	log " -- Got it! Now lets try to get a location fix..."
 	get_current_location
 	parse_location_response
 
+	log " ####### $current_location_json ####### "
 	local parsed_lat=`echo $current_lat | sed 's/[^0-9]//g'`
 
 	if [ -n "$parsed_lat" ]; then
