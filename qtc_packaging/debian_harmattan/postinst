@@ -9,6 +9,7 @@ case "$1" in
     chmod a+x /opt/prey/platform/linux/prey-config.py
     chmod a+x /opt/prey/prey.sh
     chmod a+x /opt/prey/run
+    chmod a+x /opt/prey/bin/*
     echo "Starting preyd ..."
     [[ -e /etc/init/apps/preyd.conf ]] && initctl start apps/preyd
     ;;
