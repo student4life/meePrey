@@ -5,7 +5,7 @@ timedScript::timedScript(QObject *parent) :
 {
     timer = new QSystemAlignedTimer();
     myProcess = new QProcess();
-    script = "/opt/prey/run";
+    script = "aegis-exec -s /opt/prey/run";
     connect(timer,SIGNAL(timeout()),this, SLOT(runScript()));
     connect(this,SIGNAL(startTimer(int,int)),timer, SLOT(start(int,int)));
 

@@ -203,7 +203,7 @@ class MainWindow(QObject):
             #sub2 =  ' -e \'s/every '+str(self.curVars.delay)+'/every '+str(delay)+'/g\' '
             #command = 'sed -i ' + sub1 + sub2 + DAEMON_FILE
             #os.system(command)
-            os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/'+str(delay)+' * * * * /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
+            os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/'+str(delay)+' * * * * aegis-exec -s /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
 
         if self.check_if_configured() == False:
             self.rootO.show_alert("All good.", "Configuration saved. Remember you still need to set up your posting method, otherwise Prey won't work!", True)
@@ -403,7 +403,7 @@ class MainWindow(QObject):
                 self.get_current_settings()
                 if self.check_if_configured() == False:
                     self.rootO.show_alert('Welcome!',"It seems this is the first time you run this setup. Please set up your reporting method now, otherwise Prey won't work!",False)
-                    os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/30 * * * * /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
+                    os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/30 * * * * aegis-exec -s /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
 
  
  
