@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+from PySide.QtCore import *
+from QtMobility.MultimediaKit import *
+from QtMobility.SystemInfo import QSystemAlignedTimer
+import sys
+
+
+class Camera:
+    def __init__(self,devNo,file):
+        self.fileName = file
+        self.camera = QCamera(QCamera.availableDevices()[devNo])
+        self.camera.setCaptureMode(QCamera.CaptureVideo)
+        self.recorder = QMediaRecorder(self.camera)
+        self.recorder.setOutputLocation(self.fileName)
+        videoSettings = QVideoEncoderSettings()
+        videoSettings.setResolution(320,240)
+        self.recorder.setEncodingSettings(self.recorder.audioSettings(),videoSettings)
+        self.camera.start()
+        
+    def recVid(self):
+        print "Starting Recording"
+        self.recorder.record()
+        QTimer.singleShot(10000,self.stopVid)
+
+    def stopVid(self):
+        print "Stoping Recording"
+        self.recorder.stop()
+        self.camera.stop()
+        app.exit()
+
+if __name__ == "__main__":
+    app = QCoreApplication([])
+    cam = Camera(int(sys.argv[1]),sys.argv[2])
+    QTimer.singleShot(2000,cam.recVid)
+    sys.exit(app.exec_())
+

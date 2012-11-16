@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+from PySide.QtCore import *
+from QtMobility.MultimediaKit import *
+from QtMobility.SystemInfo import QSystemAlignedTimer
+import sys
+
+
+class Camera:
+    def __init__(self,devNo,file):
+        self.fileName = file
+        self.camera = QCamera(QCamera.availableDevices()[devNo])
+        self.camCapture = QCameraImageCapture(self.camera)
+        self.camera.setCaptureMode(QCamera.CaptureStillImage)
+        self.camera.start()
+        self.camCapture.error.connect(self.failed)
+        self.camCapture.imageSaved.connect(self.Saved)
+        
+    @Slot()
+    def takePhoto(self):
+        print "taking Photo"
+        self.camCapture.capture(self.fileName)
+
+    def failed(self,id,err,msg):
+        print "id:%s, error:%s, errormsg:%s" %(id, err, msg)
+        app.exit()
+
+    def Saved(self,id,name):
+        print "Image id:%s, filename:%s saved. Exiting" %(id, name)
+        self.camera.stop()
+        app.exit()
+
+if __name__ == "__main__":
+    app = QCoreApplication([])
+    cam = Camera(int(sys.argv[1]),sys.argv[2])
+    QTimer.singleShot(2000,cam.takePhoto)
+    sys.exit(app.exec_())
