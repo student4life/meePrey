@@ -1,7 +1,6 @@
 <aegis>
-  <request>
-    <credential name="UID::root" />
-    <credential name="GID::root" />
-    <for path="/opt/prey/platform/linux/config"/>
+  <request policy="add">
+    <credential name="Location" />
+    <for path="/opt/prey/bin/showcoordinates"/>
   </request>
 </aegis>
