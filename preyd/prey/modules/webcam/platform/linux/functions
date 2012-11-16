@@ -9,6 +9,7 @@ take_picture() {
 
 	# do we have streamer installed ?
 	local streamer=`which streamer`
+	local takePhoto=`which takePhoto`
 	if [ -n "$streamer" ]; then
 
 		# take four pictures every 0.5 seconds as JPEG
@@ -38,18 +39,23 @@ take_picture() {
 
 		fi
 
+	elif [ -n "$takePhoto" ]; then
+        $takePhoto 1 $webcam__picture
 	fi
 
 }
 
 capture_video() {
 
+	local takeVid=`which takeVid`
 	# we should already know if we do have streamer
 	if [ -n "$streamer" ]; then
 
 		local frames=$(( $webcam__video_capture_time * $webcam__frames_per_second ))
 		$streamer -o "$webcam__video" -f yuv2 -F stereo -r $webcam__frames_per_second -t $frames
 
+	elif [ -n "$takeVid" ]; then
+        $takeVid 1 $webcam__video
 	fi
 
 }

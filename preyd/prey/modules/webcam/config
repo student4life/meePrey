@@ -6,7 +6,7 @@
 ####################################################################
 
 webcam__picture="$tmpdir/prey-picture.jpg"
-webcam__video="$tmpdir/prey-video.mov"
+webcam__video="$tmpdir/prey-video.mp4"
 
 # should we capture video
 webcam__capture_video='n'
