@@ -12,7 +12,8 @@ OTHER_FILES += \
 SUBDIRS += \
     qDialog \
     preyd \
-    mediaplay
+    mediaplay \
+    pythonScripts
 
 
 
