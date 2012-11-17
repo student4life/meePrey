@@ -171,7 +171,8 @@ remove_files(){
 
 get_current_delay(){
 	# crontab -l | grep prey | sed "s/^..\([0-9]*\).*/\1/"
-	/opt/cron/bin/crontab -l | grep prey | head -1 | sed 's/ [a\/].*//'
+	#/opt/cron/bin/crontab -l | grep prey | head -1 | sed 's/ [a\/].*//'
+    cat /etc/init/apps/preyd.conf | grep preyd | cut -d ' ' -f 3
 }
 
 get_delay_for(){
@@ -197,8 +198,11 @@ get_delay_for(){
 }
 
 update_execution_delay(){
-	local full_path=`full_path "$base_path"`
-	(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "${new_delay}" "aegis-exec -s ${full_path}/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -
+	#local full_path=`full_path "$base_path"`
+	#(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "${new_delay}" "aegis-exec -s ${full_path}/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -
+    initctl stop apps/preyd
+    sed -i -e "s/preyd [0-9]*/preyd ${delay}/g" -e "s/every [0-9]*/every ${delay}/g" /etc/init/apps/preyd.conf
+    initctl start apps/preyd
 }
 
 ####################################################################

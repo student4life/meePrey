@@ -72,4 +72,4 @@ INSTALLS += icon svg desktopfile
 
 daemonconf.path = /etc/init/apps
 daemonconf.files = preyd.conf
-#INSTALLS += daemonconf
+INSTALLS += daemonconf

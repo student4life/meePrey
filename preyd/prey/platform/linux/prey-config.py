@@ -152,13 +152,13 @@ class MainWindow(QObject):
 
     def get_current_settings(self):
 
-        delay = os.popen("/opt/cron/bin/crontab -l | grep prey | cut -c 3-4").read()
-        #command = 'cat '+DAEMON_FILE+' | grep preyd | cut -d \' \' -f 3'
-        #self.curVars.delay = int(os.popen(command).read())
-        if not delay:
-            self.curVars.delay = 30
-        else:
-            self.curVars.delay = int(delay)
+        #delay = os.popen("/opt/cron/bin/crontab -l | grep prey | cut -c 3-4").read()
+        command = 'cat '+DAEMON_FILE+' | grep preyd | cut -d \' \' -f 3'
+        self.curVars.delay = int(os.popen(command).read())
+        #if not delay:
+        #    self.curVars.delay = 30
+        #else:
+        #    self.curVars.delay = int(delay)
 
         self.curVars.auto_connect = self.get_setting('auto_connect')
         self.curVars.extended_headers = self.get_setting('extended_headers')
@@ -199,11 +199,13 @@ class MainWindow(QObject):
         # check and change the crontab interval
         if delay != int(self.curVars.delay):
             # print 'Updating delay in crontab...'
-            #sub1 =  ' -e \'s/preyd '+str(self.curVars.delay)+'/preyd '+str(delay)+'/g\' '
-            #sub2 =  ' -e \'s/every '+str(self.curVars.delay)+'/every '+str(delay)+'/g\' '
-            #command = 'sed -i ' + sub1 + sub2 + DAEMON_FILE
-            #os.system(command)
-            os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/'+str(delay)+' * * * * aegis-exec -s /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
+            sub1 =  ' -e \'s/preyd '+str(self.curVars.delay)+'/preyd '+str(delay)+'/g\' '
+            sub2 =  ' -e \'s/every '+str(self.curVars.delay)+'/every '+str(delay)+'/g\' '
+            command = 'sed -i ' + sub1 + sub2 + DAEMON_FILE
+            os.system('initctl stop apps/preyd')
+            os.system(command)
+            os.system('initctl start apps/preyd')
+            #os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/'+str(delay)+' * * * * aegis-exec -s /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
 
         if self.check_if_configured() == False:
             self.rootO.show_alert("All good.", "Configuration saved. Remember you still need to set up your posting method, otherwise Prey won't work!", True)
@@ -403,7 +405,7 @@ class MainWindow(QObject):
                 self.get_current_settings()
                 if self.check_if_configured() == False:
                     self.rootO.show_alert('Welcome!',"It seems this is the first time you run this setup. Please set up your reporting method now, otherwise Prey won't work!",False)
-                    os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/30 * * * * aegis-exec -s /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
+                    #os.system('(/opt/cron/bin/crontab -l | tail -n+4 | grep -v prey; echo "*/30 * * * * aegis-exec -s /opt/prey/prey.sh > /var/log/prey.log") | /opt/cron/bin/crontab -')
 
  
  

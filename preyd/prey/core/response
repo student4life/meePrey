@@ -41,7 +41,7 @@ process_config(){
 
 	new_delay=$(get_delay_for $delay)
 
-	if [ "`get_current_delay`" != "$new_delay" ]; then
+	if [ "`get_current_delay`" != "$delay" ]; then
 		log " -- Setting frequency to $delay!"
 		update_execution_delay "$new_delay"
 	else
